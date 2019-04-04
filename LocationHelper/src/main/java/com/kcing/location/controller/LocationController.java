@@ -11,12 +11,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.kcing.location.entities.Location;
 import com.kcing.location.service.interfaces.LocationService;
+import com.kcing.location.util.EmailUtil;
 
 @Controller
 public class LocationController {
 
 	@Autowired
 	private LocationService service;
+	
+	@Autowired
+	private EmailUtil emailUtil;
 	@RequestMapping("/showCreate")
 	public String showCreate() {
 		return "createLocation";
@@ -27,6 +31,9 @@ public class LocationController {
 		Location saveLocation = service.saveLocation(location);
 		String msg = "successfully created:"+saveLocation.getId();
 		modelMap.addAttribute("msg", msg);
+		
+		emailUtil.sendEmail("User Created", "rkman.maharjan@gmail.com", "Test123");
+		
 		return "createLocation";
 	}
 	
@@ -45,5 +52,18 @@ public class LocationController {
 		modelMap.addAttribute("locations", allLocations);
 		return "displayLocations";
 	}	
+	@RequestMapping("/updateLocation")
+	public String showUpdate(@RequestParam("id") long id,ModelMap modelMap) {
+		Location l = service.findLocation(id);
+		modelMap.addAttribute("location", l);
+		return "updateLocation";
+	}	
 	
+	@RequestMapping("/editLocation")
+	public String editLocation(@ModelAttribute("location") Location location,ModelMap modelMap) {
+		 service.updateLocation(location);
+		List<Location> allLocations = service.findAllLocations();
+		modelMap.addAttribute("locations", allLocations);
+		return "displayLocations";
+	}
 }
