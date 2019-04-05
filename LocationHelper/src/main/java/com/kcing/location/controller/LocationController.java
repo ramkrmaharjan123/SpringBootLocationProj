@@ -2,6 +2,8 @@ package com.kcing.location.controller;
 
 import java.util.List;
 
+import javax.servlet.ServletContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -10,15 +12,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.kcing.location.entities.Location;
+import com.kcing.location.repos.LocationRepository;
 import com.kcing.location.service.interfaces.LocationService;
 import com.kcing.location.util.EmailUtil;
+import com.kcing.location.util.ReportUtil;
 
 @Controller
 public class LocationController {
 
 	@Autowired
-	private LocationService service;
+	private LocationService service; 
 	
+	@Autowired
+	private LocationRepository repository;
+	
+	@Autowired
+	private ReportUtil reportUtil;
+	
+	@Autowired
+	private ServletContext sc;
 	@Autowired
 	private EmailUtil emailUtil;
 	@RequestMapping("/showCreate")
@@ -65,5 +77,13 @@ public class LocationController {
 		List<Location> allLocations = service.findAllLocations();
 		modelMap.addAttribute("locations", allLocations);
 		return "displayLocations";
+	}
+	
+	@RequestMapping("/generateReport")
+	public String generateReport() {
+		String path = sc.getRealPath("/");
+		List<Object[]> data = repository.findTypeAndTypeCount();
+		reportUtil.generatePieChart(path, data);
+		return "report";
 	}
 }
